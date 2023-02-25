@@ -8,7 +8,6 @@ import {CopyOnWriteToMemoryFS} from '@parcel/fs';
 import {workerFarm, inputFS, fsFixture} from '@parcel/test-utils';
 
 import assert from 'assert';
-import nullthrows from 'nullthrows';
 import path from 'path';
 import sinon from 'sinon';
 
@@ -44,12 +43,14 @@ describe('@parcel/link', () => {
     ...exprs: Array<any>
   ): Promise<CopyOnWriteToMemoryFS>;
 
+  // eslint-disable-next-line no-redeclare
   declare function createFS(cwd?: string): Promise<CopyOnWriteToMemoryFS> &
     ((
       strings: Array<string>, // $FlowFixMe[unclear-type]
       ...values: Array<any>
     ) => Promise<CopyOnWriteToMemoryFS>);
 
+  // eslint-disable-next-line no-redeclare
   function createFS(cwdOrStrings = '/', ...exprs) {
     assert(_cwd == null, 'FS already exists!');
 
@@ -82,11 +83,11 @@ describe('@parcel/link', () => {
     }
   }
 
-  beforeEach(async function () {
+  beforeEach(function () {
     _stdout = sinon.stub(process.stdout, 'write');
   });
 
-  afterEach(async function () {
+  afterEach(function () {
     _cwd?.restore();
     _stdout?.restore();
     _cwd = null;
@@ -96,8 +97,7 @@ describe('@parcel/link', () => {
   it('prints help text', async () => {
     let fs = await createFS();
     let cli = createProgram({fs});
-    // $FlowFixMe[prop-missing]
-    await assert.rejects(async () => cli('--help'), /\(outputHelp\)/);
+    await assert.throws(() => cli('--help'), /\(outputHelp\)/);
   });
 
   it('links by default', async () => {
@@ -115,7 +115,7 @@ describe('@parcel/link', () => {
       let cli = createProgram({fs});
 
       // $FlowFixMe[prop-missing]
-      await assert.rejects(async () => cli('link'), /Not a project root/);
+      await assert.rejects(() => cli('link'), /Not a project root/);
     });
 
     it('errors for invalid package root', async () => {
@@ -126,7 +126,7 @@ describe('@parcel/link', () => {
       let cli = createProgram({fs});
 
       // $FlowFixMe[prop-missing]
-      await assert.rejects(async () => cli('link /fake'), /Not a package root/);
+      await assert.rejects(() => cli('link /fake'), /Not a package root/);
     });
 
     it('errors when a link exists', async () => {
@@ -136,7 +136,7 @@ describe('@parcel/link', () => {
       await cli(`link`);
 
       // $FlowFixMe[prop-missing]
-      await assert.rejects(async () => cli('link'), /link already exists/);
+      await assert.rejects(() => cli('link'), /link already exists/);
     });
 
     it('links with the default options', async () => {
@@ -366,10 +366,7 @@ describe('@parcel/link', () => {
       let cli = createProgram({fs});
 
       // $FlowFixMe[prop-missing]
-      await assert.rejects(
-        async () => cli('unlink'),
-        /link could not be found/,
-      );
+      await assert.rejects(() => cli('unlink'), /link could not be found/);
     });
 
     it('errors for invalid app root', async () => {
@@ -385,7 +382,7 @@ describe('@parcel/link', () => {
       let cli = createProgram({fs});
 
       // $FlowFixMe[prop-missing]
-      await assert.rejects(async () => cli('unlink'), /Not a project root/);
+      await assert.rejects(() => cli('unlink'), /Not a project root/);
     });
 
     it('errors for invalid package root', async () => {
@@ -401,7 +398,7 @@ describe('@parcel/link', () => {
       let cli = createProgram({fs});
 
       // $FlowFixMe[prop-missing]
-      await assert.rejects(async () => cli('unlink'), /Not a package root/);
+      await assert.rejects(() => cli('unlink'), /Not a package root/);
     });
 
     it('unlinks with the default options', async () => {
