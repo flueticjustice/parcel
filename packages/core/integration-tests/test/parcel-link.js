@@ -4,7 +4,7 @@ import type {FileSystem} from '@parcel/fs';
 import type {ProgramOptions} from '@parcel/link';
 
 import {createProgram as _createProgram} from '@parcel/link';
-import {CopyOnWriteToMemoryFS} from '@parcel/fs';
+import {OverlayFS} from '@parcel/fs';
 import {workerFarm, inputFS, fsFixture} from '@parcel/test-utils';
 
 import assert from 'assert';
@@ -41,32 +41,33 @@ describe('@parcel/link', () => {
   declare function createFS(
     strings: Array<string>, // $FlowFixMe[unclear-type]
     ...exprs: Array<any>
-  ): Promise<CopyOnWriteToMemoryFS>;
+  ): Promise<OverlayFS>;
 
   // eslint-disable-next-line no-redeclare
-  declare function createFS(cwd?: string): Promise<CopyOnWriteToMemoryFS> &
+  declare function createFS(cwd?: string): Promise<OverlayFS> &
     ((
       strings: Array<string>, // $FlowFixMe[unclear-type]
       ...values: Array<any>
-    ) => Promise<CopyOnWriteToMemoryFS>);
+    ) => Promise<OverlayFS>);
 
   // eslint-disable-next-line no-redeclare
   function createFS(cwdOrStrings = '/', ...exprs) {
     assert(_cwd == null, 'FS already exists!');
 
-    let fs = new CopyOnWriteToMemoryFS(workerFarm, inputFS);
+    let fs = new OverlayFS(workerFarm, inputFS);
 
+    // $FlowFixMe[incompatible-call]
     _cwd = sinon.stub(process, 'cwd').callsFake(() => fs.cwd());
 
     if (Array.isArray(cwdOrStrings)) {
-      let cwd = '/';
+      let cwd = path.resolve(path.sep);
       return fs.mkdirp(cwd).then(async () => {
         fs.chdir(cwd);
         await fsFixture(fs, cwd)(cwdOrStrings, ...exprs);
         return fs;
       });
     } else {
-      let cwd = cwdOrStrings;
+      let cwd = path.resolve(cwdOrStrings);
       let promise = fs.mkdirp(cwd).then(() => {
         fs.chdir(cwd);
         return callableProxy(fs, async (...args) => {
